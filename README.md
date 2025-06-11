@@ -1,12 +1,23 @@
-# React + Vite
+# 🧠 Admin Panel (Frontend)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is the frontend for a full-stack Admin Panel built using **React** and **Tailwind CSS**, connected with a Node.js/Express backend and MongoDB database.
 
-Currently, two official plugins are available:
+🔗 **Live Demo:** [Click here](https://admin-panel-frontend-iota-nine.vercel.app/)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Tech Stack
+- React
+- Tailwind CSS
+- Axios
+- Vercel (Hosting)
 
-## Expanding the ESLint configuration
+## 📸 Screenshots
+![Dashboard](./screenshots/dashboard.png)
+![Login](./screenshots/login.png)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 🔧 Setup
+
+```bash
+git clone https://github.com/MadhavR97/Admin_Panel_Frontend
+cd Admin_Panel_Frontend
+npm install
+npm start
