@@ -15,16 +15,6 @@ This is the frontend for a full-stack **Admin Panel** built using **React** and 
 
 ---
 
-## 📸 Screenshots
-
-### 🔐 Login Page
-![Login](./Login.png)
-
-### 📋 Dashboard
-![Dashboard](./DashBoard.png)
-
----
-
 ## ✨ Features
 - Admin Login using JWT
 - Task Creation
