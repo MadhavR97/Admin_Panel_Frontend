@@ -1,20 +1,40 @@
-# 🧠 Admin Panel (Frontend)
+# Admin Panel (Frontend)
 
-This is the frontend for a full-stack Admin Panel built using **React** and **Tailwind CSS**, connected with a Node.js/Express backend and MongoDB database.
+This is the frontend for a full-stack **Admin Panel** built using **React** and **Tailwind CSS**, connected with a Node.js/Express backend and MongoDB database. The admin can securely log in, and manage tasks with ease.
 
 🔗 **Live Demo:** [Click here](https://admin-panel-frontend-iota-nine.vercel.app/)
+
+---
 
 ## 🚀 Tech Stack
 - React
 - Tailwind CSS
 - Axios
-- Vercel (Hosting)
+- React Router
+- Vercel (Frontend Hosting)
+
+---
 
 ## 📸 Screenshots
-![Dashboard](./screenshots/dashboard.png)
-![Login](./screenshots/login.png)
 
-## 🔧 Setup
+### 🔐 Login Page
+![Login](./Login.png)
+
+### 📋 Dashboard
+![Dashboard](./DashBoard.png)
+
+---
+
+## ✨ Features
+- Admin Login using JWT
+- Task Creation
+- Task Deletion
+- Protected Dashboard Route
+- Responsive UI
+
+---
+
+## 🛠️ Setup Instructions
 
 ```bash
 git clone https://github.com/MadhavR97/Admin_Panel_Frontend
