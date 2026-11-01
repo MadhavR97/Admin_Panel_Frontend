@@ -84,20 +84,31 @@ const IconSpinner = () => (
   </svg>
 );
 
+// Hamburger / Close icon for mobile menu toggle
+const IconMenu = ({ open }) => open ? (
+  <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+  </svg>
+) : (
+  <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+  </svg>
+);
+
 // ─── API Base URL ──────────────────────────────────────────────────────────────
 const BASE_URL = 'https://admin-panel-backend-1tym.onrender.com';
 
 // ─── Stat Card Component ───────────────────────────────────────────────────────
 const StatCard = ({ title, value, icon, gradient, textColor }) => (
-  <div className={`relative overflow-hidden rounded-2xl p-5 bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 group hover:scale-[1.02] transition-all duration-300 hover:shadow-lg`}>
+  <div className={`relative overflow-hidden rounded-2xl p-4 sm:p-5 bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 group hover:scale-[1.02] transition-all duration-300 hover:shadow-lg`}>
     {/* Gradient accent top-border */}
     <div className={`absolute top-0 left-0 right-0 h-[2px] ${gradient}`} />
     <div className="flex items-start justify-between">
       <div>
-        <p className="text-xs font-medium text-slate-400 uppercase tracking-widest mb-1">{title}</p>
-        <p className={`text-3xl font-bold ${textColor}`}>{value}</p>
+        <p className="text-[10px] sm:text-xs font-medium text-slate-400 uppercase tracking-widest mb-1">{title}</p>
+        <p className={`text-2xl sm:text-3xl font-bold ${textColor}`}>{value}</p>
       </div>
-      <div className={`p-3 rounded-xl bg-slate-700/60 ${textColor}`}>
+      <div className={`p-2 sm:p-3 rounded-xl bg-slate-700/60 ${textColor}`}>
         {icon}
       </div>
     </div>
@@ -113,7 +124,7 @@ const EmptyState = () => (
       </svg>
     </div>
     <h3 className="text-lg font-semibold text-slate-400 mb-1">No tasks yet</h3>
-    <p className="text-sm text-slate-500 max-w-[200px]">Add your first task using the form on the left to get started.</p>
+    <p className="text-sm text-slate-500 max-w-[200px]">Add your first task using the form above to get started.</p>
   </div>
 );
 
@@ -128,6 +139,7 @@ function Dashboard() {
   const [isLoading, setIsLoading]         = useState(false);
   const [activePage, setActivePage]       = useState('dashboard');
   const [notification, setNotification]   = useState(null);  // { type: 'success'|'error', msg }
+  const [sidebarOpen, setSidebarOpen]     = useState(false); // mobile sidebar toggle
 
   const [formData, setFormData] = useState({ name: '', email: '' });
 
@@ -167,6 +179,15 @@ function Dashboard() {
       });
 
     fetchStudents();
+  }, []);
+
+  // Close sidebar when resizing to desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) setSidebarOpen(false);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   // ── CRUD Handlers ─────────────────────────────────────────────────────────────
@@ -252,78 +273,118 @@ function Dashboard() {
     { id: 'settings',  label: 'Settings',  icon: <IconSettings /> },
   ];
 
+  // ─── Shared sidebar content (used in both desktop & mobile drawer) ─────────
+  const SidebarContent = ({ onNavClick }) => (
+    <>
+      {/* Logo */}
+      <div className="px-6 py-6 border-b border-slate-700/50">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+          <div>
+            <span className="text-base font-bold text-white tracking-tight">TaskFlow</span>
+            <p className="text-[10px] text-slate-400 leading-none">Admin Panel</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 px-3 py-6 space-y-1">
+        <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest px-3 mb-3">Menu</p>
+        {navItems.map(item => (
+          <button
+            key={item.id}
+            onClick={() => { setActivePage(item.id); onNavClick && onNavClick(); }}
+            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer
+              ${activePage === item.id
+                ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 shadow-sm shadow-indigo-500/10'
+                : 'text-slate-400 hover:bg-slate-700/50 hover:text-slate-200'
+              }`}
+          >
+            {item.icon}
+            {item.label}
+            {activePage === item.id && (
+              <span className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-400" />
+            )}
+          </button>
+        ))}
+      </nav>
+
+      {/* Logout */}
+      <div className="px-3 py-5 border-t border-slate-700/50">
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all duration-200 cursor-pointer border border-transparent hover:border-red-500/20"
+        >
+          <IconLogout />
+          Logout
+        </button>
+      </div>
+    </>
+  );
+
   // ── Render ────────────────────────────────────────────────────────────────────
   return (
     <div className="flex min-h-screen bg-slate-900 text-slate-100 font-sans">
 
+      {/* ══════════════════════════════════════════ MOBILE SIDEBAR OVERLAY */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* ═══════════════════════════════════════════════════════ SIDEBAR */}
-      <aside className="fixed top-0 left-0 h-full w-64 bg-slate-800/80 backdrop-blur-xl border-r border-slate-700/50 flex flex-col z-30">
+      {/* Desktop sidebar — always visible */}
+      <aside className="hidden lg:flex fixed top-0 left-0 h-full w-64 bg-slate-800/80 backdrop-blur-xl border-r border-slate-700/50 flex-col z-30">
+        <SidebarContent />
+      </aside>
 
-        {/* Logo */}
-        <div className="px-6 py-6 border-b border-slate-700/50">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </div>
-            <div>
-              <span className="text-base font-bold text-white tracking-tight">TaskFlow</span>
-              <p className="text-[10px] text-slate-400 leading-none">Admin Panel</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 px-3 py-6 space-y-1">
-          <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest px-3 mb-3">Menu</p>
-          {navItems.map(item => (
-            <button
-              key={item.id}
-              onClick={() => setActivePage(item.id)}
-              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer
-                ${activePage === item.id
-                  ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 shadow-sm shadow-indigo-500/10'
-                  : 'text-slate-400 hover:bg-slate-700/50 hover:text-slate-200'
-                }`}
-            >
-              {item.icon}
-              {item.label}
-              {activePage === item.id && (
-                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-indigo-400" />
-              )}
-            </button>
-          ))}
-        </nav>
-
-        {/* Logout */}
-        <div className="px-3 py-5 border-t border-slate-700/50">
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all duration-200 cursor-pointer border border-transparent hover:border-red-500/20"
-          >
-            <IconLogout />
-            Logout
-          </button>
-        </div>
+      {/* Mobile sidebar — slide-in drawer */}
+      <aside
+        className={`fixed top-0 left-0 h-full w-72 bg-slate-800 border-r border-slate-700/50 flex flex-col z-50 transition-transform duration-300 ease-in-out lg:hidden
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      >
+        {/* Close button inside mobile drawer */}
+        <button
+          onClick={() => setSidebarOpen(false)}
+          className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700/60 transition-colors"
+          aria-label="Close sidebar"
+        >
+          <IconMenu open={true} />
+        </button>
+        <SidebarContent onNavClick={() => setSidebarOpen(false)} />
       </aside>
 
       {/* ═══════════════════════════════════════════════════ MAIN AREA */}
-      <div className="flex-1 ml-64 flex flex-col min-h-screen">
+      <div className="flex-1 lg:ml-64 flex flex-col min-h-screen w-full">
 
         {/* ─────────────────────────────────────────────────── TOPBAR */}
-        <header className="sticky top-0 z-20 bg-slate-900/80 backdrop-blur-xl border-b border-slate-700/50 px-8 py-4">
-          <div className="flex items-center justify-between">
-            {/* Welcome */}
-            <div>
-              <h1 className="text-lg font-bold text-white leading-tight">
-                Hi, {dashboardData?.user?.name ?? '...'}! 👋
-              </h1>
-              <p className="text-xs text-slate-400 mt-0.5">{currentDate}</p>
+        <header className="sticky top-0 z-20 bg-slate-900/80 backdrop-blur-xl border-b border-slate-700/50 px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-3">
+            {/* Hamburger (mobile only) + Welcome */}
+            <div className="flex items-center gap-3 min-w-0">
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="lg:hidden flex-shrink-0 p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-700/50 transition-colors"
+                aria-label="Open sidebar"
+              >
+                <IconMenu open={false} />
+              </button>
+              <div className="min-w-0">
+                <h1 className="text-sm sm:text-base lg:text-lg font-bold text-white leading-tight truncate">
+                  Hi, {dashboardData?.user?.name ?? '...'}! 👋
+                </h1>
+                <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5 hidden sm:block">{currentDate}</p>
+              </div>
             </div>
 
             {/* Right side */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
               {/* Notification badge */}
               <div className="relative">
                 <div className="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-white hover:border-slate-500 transition-colors cursor-pointer">
@@ -339,7 +400,7 @@ function Dashboard() {
               </div>
 
               {/* Avatar */}
-              <div className="flex items-center gap-3 pl-4 border-l border-slate-700">
+              <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 border-l border-slate-700">
                 <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md shadow-indigo-500/20 text-white font-bold text-sm select-none">
                   {dashboardData?.user?.name?.[0]?.toUpperCase() ?? 'U'}
                 </div>
@@ -355,32 +416,32 @@ function Dashboard() {
         </header>
 
         {/* ─────────────────────────────────────────────── CONTENT */}
-        <main className="flex-1 px-8 py-8 space-y-8">
+        <main className="flex-1 px-4 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-5 sm:space-y-8">
 
           {/* Toast Notification */}
           {notification && (
             <div
-              className={`fixed top-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-2xl text-sm font-medium backdrop-blur-md border transition-all duration-300
+              className={`fixed top-4 right-4 left-4 sm:left-auto sm:right-6 sm:top-6 z-50 flex items-center gap-3 px-4 sm:px-5 py-3 sm:py-3.5 rounded-xl shadow-2xl text-sm font-medium backdrop-blur-md border transition-all duration-300 sm:max-w-sm
                 ${notification.type === 'success'
                   ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-300'
                   : 'bg-red-500/20 border-red-500/30 text-red-300'
                 }`}
             >
               {notification.type === 'success' ? (
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
               )}
-              {notification.msg}
+              <span className="flex-1">{notification.msg}</span>
             </div>
           )}
 
           {/* ── STAT CARDS ─────────────────────────────────────────────────── */}
-          <section className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+          <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <StatCard
               title="Total Tasks"
               value={totalTasks}
@@ -412,20 +473,16 @@ function Dashboard() {
           </section>
 
           {/* ── MAIN GRID ──────────────────────────────────────────────────── */}
-          <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <section className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6">
 
             {/* ── ADD / EDIT TASK FORM ─────────────────────────────────────── */}
             <div className="lg:col-span-1">
-              <div className="rounded-2xl bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 p-6 h-full flex flex-col">
+              <div className="rounded-2xl bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 p-5 sm:p-6 h-full flex flex-col">
 
                 {/* Card header */}
-                <div className="flex items-center gap-3 mb-6">
+                <div className="flex items-center gap-3 mb-5 sm:mb-6">
                   <div className={`p-2 rounded-lg ${editIndex !== null ? 'bg-amber-500/15' : 'bg-indigo-500/15'}`}>
-                    {editIndex !== null ? (
-                      <IconEdit />
-                    ) : (
-                      <IconPlus />
-                    )}
+                    {editIndex !== null ? <IconEdit /> : <IconPlus />}
                   </div>
                   <div>
                     <h2 className="text-base font-bold text-white">
@@ -502,10 +559,10 @@ function Dashboard() {
 
             {/* ── TASK LIST ─────────────────────────────────────────────────── */}
             <div className="lg:col-span-2">
-              <div className="rounded-2xl bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 p-6 flex flex-col h-full min-h-[420px]">
+              <div className="rounded-2xl bg-slate-800/60 backdrop-blur-sm border border-slate-700/50 p-5 sm:p-6 flex flex-col h-full min-h-[380px] sm:min-h-[420px]">
 
                 {/* Card header */}
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center justify-between mb-5 sm:mb-6">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-blue-500/15">
                       <IconTasks />
@@ -530,7 +587,7 @@ function Dashboard() {
                     students.map((student, index) => (
                       <div
                         key={student._id}
-                        className={`group flex items-start gap-4 p-4 rounded-xl border transition-all duration-200
+                        className={`group flex items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl border transition-all duration-200
                           ${student.completed
                             ? 'bg-emerald-500/5 border-emerald-500/20 hover:border-emerald-500/30'
                             : 'bg-slate-700/30 border-slate-600/30 hover:border-slate-500/50 hover:bg-slate-700/50'
@@ -563,8 +620,8 @@ function Dashboard() {
                           </span>
                         </div>
 
-                        {/* Actions */}
-                        <div className="flex items-center gap-2 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                        {/* Actions — always visible on mobile, hover-reveal on desktop */}
+                        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150">
                           {/* Mark complete */}
                           <button
                             onClick={() => handleToggleComplete(student)}
@@ -606,7 +663,7 @@ function Dashboard() {
         </main>
 
         {/* ─────────────────────────────────────────────────── FOOTER */}
-        <footer className="px-8 py-4 border-t border-slate-700/50 text-center">
+        <footer className="px-4 sm:px-8 py-4 border-t border-slate-700/50 text-center">
           <p className="text-xs text-slate-600">
             TaskFlow Admin Panel &copy; {new Date().getFullYear()} — Built with React &amp; Tailwind CSS
           </p>
